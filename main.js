@@ -3,16 +3,26 @@ var moment = require('moment');
 var fs = require('fs');
 var execSync = require('child_process').execSync;
 var SibApiV3Sdk = require('sib-api-v3-sdk');
-const { Server } = require('https');
-var defaultClient = SibApiV3Sdk.ApiClient.instance;
+var http = require('http');
 
+var defaultClient = SibApiV3Sdk.ApiClient.instance;
 // Configure API key authorization: api-key
 var apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = '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';
 
 
 var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+let log = "Hello! I'm Crawling. Good Luck!\n";
+http.createServer(function (request, response) {
 
+    // 发送 HTTP 头部 
+    // HTTP 状态值: 200 : OK
+    // 内容类型: text/plain
+    response.writeHead(200, { 'Content-Type': 'text/plain' });
+
+    // 发送响应数据 "Hello World"
+    response.end(log);
+}).listen(process.env.PORT || 8888);
 // var sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); // SendSmtpEmail | Values to send a transactional email
 
 
@@ -167,7 +177,9 @@ async function main() {
                             let availableTime = responseData[0].beginTime;
                             console.log("Found Available: ", date, availableTime);
                             try {
-                                fs.appendFileSync('log', moment().format() + 'FOUND: ' + date + ' ' + availableTime + '\n');
+                                let errorMessage = moment().format() + 'FOUND: ' + date + ' ' + availableTime + '\n';
+                                log += errorMessage;
+                                fs.appendFileSync('log', errorMessage);
                             } catch (error) {
 
                             }
@@ -208,8 +220,8 @@ async function main() {
                                 }, function (error) {
                                     throw error;
                                 });
-                                return;
-                                break;
+                                // return;
+                                // break;
                             }
                         }
                     }
@@ -219,7 +231,9 @@ async function main() {
         } catch (error) {
             let errorText = error?.toString() || error;
             console.log(errorText);
-            fs.appendFileSync('log', moment().format() + 'ERROR: ' + errorText + '\n');
+            let errorMessage = moment().format() + 'ERROR: ' + errorText + '\n';
+            log += errorMessage;
+            fs.appendFileSync('log', errorMessage);
         }
         await sleep(LONG_SLEEP_TIME);
 
@@ -229,4 +243,3 @@ async function main() {
 
 // }
 main();
-process.env.PORT && Server.listen(process.env.PORT);
