@@ -211,8 +211,9 @@ async function main() {
                 }
             }
         } catch (error) {
-            console.log(error.toString());
-            fs.appendFileSync('log', moment().format() + 'ERROR: ' + error.toString() + '\n');
+            let errorText = error?.toString() || error;
+            console.log(errorText);
+            fs.appendFileSync('log', moment().format() + 'ERROR: ' + errorText + '\n');
         }
         await sleep(LONG_SLEEP_TIME);
 
