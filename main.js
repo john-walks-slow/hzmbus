@@ -4,7 +4,13 @@ var fs = require('fs');
 var execSync = require('child_process').execSync;
 var SibApiV3Sdk = require('sib-api-v3-sdk');
 var http = require('http');
-
+try {
+    let captcha = execSync("python ocr.py").toString().split('\n')[3].slice(0, -1);
+    console.log(captcha, captcha.match(/[0-9]{4}/));
+} catch (error) {
+    console.log('Exec Error');
+    throw error;
+}
 var defaultClient = SibApiV3Sdk.ApiClient.instance;
 // Configure API key authorization: api-key
 var apiKey = defaultClient.authentications['api-key'];
@@ -127,9 +133,9 @@ var api = {
 };
 
 
-const SLEEP_TIME = 1000;
-const LONG_SLEEP_TIME = 1000;
-let lineCode = "ZHOHKG";
+const SLEEP_TIME = 1500;
+const LONG_SLEEP_TIME = 5000;
+let lineCode = "HKGZHO";
 
 
 function range(start, end) {
@@ -220,6 +226,9 @@ async function main() {
                                 }, function (error) {
                                     throw error;
                                 });
+                                let successMessage = moment().format() + 'SUCCESS: ' + link + '\n';
+                                log += successMessage;
+                                fs.appendFileSync('log', successMessage);
                                 // return;
                                 // break;
                             }
