@@ -18,16 +18,17 @@ apiKey.apiKey = 'xkeysib-5b165ca2f3f44300497a584856f587b92d37acdce8b5468f2e0c6eb
 
 
 var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-let log = "Hello! I'm Crawling. Good Luck!\n";
+let log = "";
+let time = 0;
 http.createServer(function (request, response) {
 
     // 发送 HTTP 头部 
     // HTTP 状态值: 200 : OK
     // 内容类型: text/plain
-    response.writeHead(200, { 'Content-Type': 'text/plain' });
+    response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
 
     // 发送响应数据 "Hello World"
-    response.end(log);
+    response.end(`I have fetched ${time} times. Good luck!\n${log}`);
 }).listen(process.env.PORT || 8888);
 // var sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); // SendSmtpEmail | Values to send a transactional email
 
@@ -133,8 +134,8 @@ var api = {
 };
 
 
-const SLEEP_TIME = 1500;
-const LONG_SLEEP_TIME = 5000;
+const SLEEP_TIME = 1000;
+const LONG_SLEEP_TIME = 1000;
 let lineCode = "HKGZHO";
 
 
@@ -148,13 +149,24 @@ function sleep(ms) {
     });
 }
 async function main() {
+    let cookie = "";
+    let jwt = "";
+    let response = await axios(api.login())
+        .catch(error => { throw error; });
+    await sleep(SLEEP_TIME);
+    cookie = response.headers['set-cookie'][0].split(';')[0];
+    jwt = response.data.jwt;
+    console.log('Log in ...');
+    // setInterval(async () => {
+    //     let response = await axios(api.login())
+    //         .catch(error => { throw error; });
+    //     await sleep(SLEEP_TIME);
+    //     cookie = response.headers['set-cookie'][0].split(';')[0];
+    //     jwt = response.data.jwt;
+    // }, 1000 * 60 * 60);
     while (true) {
+        time++;
         try {
-            let response = await axios(api.login())
-                .catch(error => { throw error; });
-            await sleep(SLEEP_TIME);
-            let cookie = response.headers['set-cookie'][0].split(';')[0];
-            let jwt = response.data.jwt;
             let day = parseInt(moment().format('d'));
             day = day == 0 ? 7 : day;
             let dayRange = range(2, 14 - day);
@@ -168,11 +180,11 @@ async function main() {
                     .then((response) => (
                         response.data
                     ))
-                    .catch(error => error);
+                    .catch(error => { throw error; });
                 await sleep(SLEEP_TIME);
 
                 // console.log(response);
-                if (response?.code != "SUCCESS") { throw response?.message || response; }
+                if (response?.code != "SUCCESS") { throw new Error(response?.message); }
                 if (response?.code == "SUCCESS") {
                     let responseData = response.responseData;
                     // console.log(responseData);
@@ -183,7 +195,7 @@ async function main() {
                             let availableTime = responseData[0].beginTime;
                             console.log("Found Available: ", date, availableTime);
                             try {
-                                let errorMessage = moment().format() + 'FOUND: ' + date + ' ' + availableTime + '\n';
+                                let errorMessage = moment().format() + ' [FOUND] ' + date + ' ' + availableTime + '\n';
                                 log += errorMessage;
                                 fs.appendFileSync('log', errorMessage);
                             } catch (error) {
@@ -197,7 +209,7 @@ async function main() {
                                         return response.data;
                                     })
                                     .catch(error => { throw error; });
-                                // if (response?.code != "SUCCESS") { throw response?.message || response; }
+                                // if (response?.code != "SUCCESS") { throw new Error(response?.message); }
                                 await sleep(SLEEP_TIME);
 
                                 // console.log(response);
@@ -218,7 +230,7 @@ async function main() {
                                 })
                                 .catch(error => { throw error; });
                             await sleep(SLEEP_TIME);
-                            if (response?.code != "SUCCESS") { throw response?.message || response; }
+                            if (response?.code != "SUCCESS") { throw new Error(response?.message); }
                             if (response?.code == "SUCCESS") {
                                 let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
                                 console.log(link);
@@ -226,7 +238,7 @@ async function main() {
                                 }, function (error) {
                                     throw error;
                                 });
-                                let successMessage = moment().format() + 'SUCCESS: ' + link + '\n';
+                                let successMessage = moment().format() + ' [SUCCESS] ' + link + '\n';
                                 log += successMessage;
                                 fs.appendFileSync('log', successMessage);
                                 // return;
@@ -238,11 +250,20 @@ async function main() {
                 }
             }
         } catch (error) {
-            let errorText = error?.toString() || error;
-            console.log(errorText);
-            let errorMessage = moment().format() + 'ERROR: ' + errorText + '\n';
-            log += errorMessage;
-            fs.appendFileSync('log', errorMessage);
+            let errorText = error.toString();
+            if (error.message == "请先登录") {
+                let response = await axios(api.login())
+                    .catch(error => { throw error; });
+                await sleep(SLEEP_TIME);
+                cookie = response.headers['set-cookie'][0].split(';')[0];
+                jwt = response.data.jwt;
+                console.log('Log in ...');
+            } else {
+                let errorMessage = moment().format() + ' [ERROR] ' + errorText;
+                console.log(errorMessage);
+                log += errorMessage + '\n';
+                fs.appendFileSync('log', errorMessage + '\n');
+            }
         }
         await sleep(LONG_SLEEP_TIME);
 
