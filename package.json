@@ -1,7 +1,7 @@
 {
   "main": "main.js",
   "scripts": {
-    "start": "pip install ddddocr && node main.js"
+    "start": "node main.js"
   },
   "dependencies": {
     "axios": "^0.26.1",
