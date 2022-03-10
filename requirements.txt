@@ -1,2 +1,2 @@
 ddddocr
-opencv-python-headless==4.2.0.32
+opencv-python-headless==4.3.0.38
