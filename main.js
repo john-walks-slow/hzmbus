@@ -178,7 +178,7 @@ async function main() {
                                         return response.data;
                                     })
                                     .catch(error => { throw error; });
-                                if (response?.code != "SUCCESS") { throw response?.message || response; }
+                                // if (response?.code != "SUCCESS") { throw response?.message || response; }
                                 await sleep(SLEEP_TIME);
 
                                 // console.log(response);
