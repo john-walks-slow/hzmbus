@@ -118,6 +118,7 @@ var api = {
 
 const SLEEP_TIME = 1000;
 const LONG_SLEEP_TIME = 1000;
+let lineCode = "ZHOHKG";
 
 
 function range(start, end) {
@@ -130,7 +131,6 @@ function sleep(ms) {
     });
 }
 async function main() {
-    let lineCode = "HKGZHO";
     while (true) {
         try {
             let response = await axios(api.login())
