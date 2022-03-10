@@ -187,7 +187,7 @@ async function main() {
                 if (response?.code != "SUCCESS") { throw new Error(response?.message); }
                 if (response?.code == "SUCCESS") {
                     let responseData = response.responseData;
-                    // console.log(responseData);
+                    console.log(responseData);
                     if (responseData.length > 0) {
                         responseData = responseData.filter(d => parseInt(d.maxPeople) > 0);
                         if (responseData.length > 0) {
