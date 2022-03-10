@@ -183,7 +183,12 @@ async function main() {
 
                                 // console.log(response);
                                 fs.writeFileSync("captcha.png", response);
-                                captcha = execSync("python ocr.py").toString().split('\n')[3].slice(0, -1);
+                                try {
+                                    captcha = execSync("python ocr.py").toString().split('\n')[3].slice(0, -1);
+                                } catch (error) {
+                                    console.log('Exec Error');
+                                    throw error;
+                                }
                             } while (!captcha.match(/[0-9]{4}/));
                             console.log(`Captcha Solved: ${captcha}`);
                             // console.log(api.buy(jwt, cookie, date, availableTime, captcha, lineCode));
