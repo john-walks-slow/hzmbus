@@ -184,7 +184,7 @@ async function main() {
                 await sleep(SLEEP_TIME);
 
                 // console.log(response);
-                if (response?.code != "SUCCESS") { throw new Error(response?.message); }
+                if (response?.code != "SUCCESS") {throw new Error("Query fail: "+JSON.stringify(response)); }
                 if (response?.code == "SUCCESS") {
                     let responseData = response.responseData;
                     console.log(responseData);
@@ -230,7 +230,7 @@ async function main() {
                                 })
                                 .catch(error => { throw error; });
                             await sleep(SLEEP_TIME);
-                            if (response?.code != "SUCCESS") { throw new Error(response?.message); }
+                            if (response?.code != "SUCCESS") {throw new Error("Buy fail: "+JSON.stringify(response)); }
                             if (response?.code == "SUCCESS") {
                                 let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
                                 console.log(link);
