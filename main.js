@@ -135,7 +135,7 @@ var api = {
 
 const SLEEP_TIME = 1500;
 const LONG_SLEEP_TIME = 5000;
-let lineCode = "HKGZHO";
+let lineCode = "ZHOHKG";
 
 
 function range(start, end) {
