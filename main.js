@@ -5,7 +5,7 @@ var execSync = require('child_process').execSync;
 var SibApiV3Sdk = require('sib-api-v3-sdk');
 var http = require('http');
 try {
-    let captcha = execSync("python ocr.py").toString().split('\n')[3].slice(0, -1);
+    let captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
     console.log(captcha, captcha.match(/[0-9]{4}/));
 } catch (error) {
     console.log('Exec Error');
@@ -203,7 +203,7 @@ async function main() {
                                 // console.log(response);
                                 fs.writeFileSync("captcha.png", response);
                                 try {
-                                    captcha = execSync("python ocr.py").toString().split('\n')[3].slice(0, -1);
+                                    captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
                                 } catch (error) {
                                     console.log('Exec Error');
                                     throw error;
