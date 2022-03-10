@@ -3,6 +3,7 @@ var moment = require('moment');
 var fs = require('fs');
 var execSync = require('child_process').execSync;
 var SibApiV3Sdk = require('sib-api-v3-sdk');
+const { Server } = require('https');
 var defaultClient = SibApiV3Sdk.ApiClient.instance;
 
 // Configure API key authorization: api-key
@@ -228,3 +229,4 @@ async function main() {
 
 // }
 main();
+process.env.PORT && Server.listen(process.env.PORT);
