@@ -18,6 +18,19 @@ apiKey.apiKey = 'xkeysib-5b165ca2f3f44300497a584856f587b92d37acdce8b5468f2e0c6eb
 
 
 var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+let sendEmail = (content, subject) => {
+    apiInstance.sendTransacEmail({
+        sender: { email: "john.ren.unimportant@gmail.com", name: "Huangtu" },
+        to: [{ email: "john.ren.contact@gmail.com", name: "John" }, { email: "xmhdct@163.com", name: "Lovely Lovely Cat" }],
+        htmlContent: content, subject: subject
+    }).then(function (data) {
+    }, function (error) {
+        let errorMessage = moment().format() + ' [ERROR] ' + error?.toString();
+        console.log(errorMessage);
+        log += errorMessage + '\n';
+        fs.appendFileSync('log', errorMessage + '\n');
+    });
+};
 let log = "";
 let time = 0;
 http.createServer(function (request, response) {
@@ -134,8 +147,8 @@ var api = {
 };
 
 
-const SLEEP_TIME = 1000;
-const LONG_SLEEP_TIME = 1000;
+const SLEEP_TIME = 500;
+const LONG_SLEEP_TIME = 500;
 let lineCode = "HKGZHO";
 
 
@@ -164,6 +177,10 @@ async function main() {
     //     cookie = response.headers['set-cookie'][0].split(';')[0];
     //     jwt = response.data.jwt;
     // }, 1000 * 60 * 60);
+    sendEmail(`吱吱吱，我会认真工作的。`, "吱！黄兔开工了");
+    setInterval(() => {
+        sendEmail(`我今天挖了${time}个洞，发现了以下情况:\n${log}`, "吱！汇报进度");
+    }, 60 * 1000 * 60 * 24);
     while (true) {
         time++;
         try {
@@ -184,7 +201,7 @@ async function main() {
                 await sleep(SLEEP_TIME);
 
                 // console.log(response);
-                if (response?.code != "SUCCESS") {throw new Error("Query fail: "+JSON.stringify(response)); }
+                if (response?.code != "SUCCESS") { throw new Error("Query fail: " + JSON.stringify(response)); }
                 if (response?.code == "SUCCESS") {
                     let responseData = response.responseData;
                     console.log(responseData);
@@ -230,14 +247,11 @@ async function main() {
                                 })
                                 .catch(error => { throw error; });
                             await sleep(SLEEP_TIME);
-                            if (response?.code != "SUCCESS") {throw new Error("Buy fail: "+JSON.stringify(response)); }
+                            if (response?.code != "SUCCESS") { throw new Error("Buy fail: " + JSON.stringify(response)); }
                             if (response?.code == "SUCCESS") {
                                 let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
                                 console.log(link);
-                                apiInstance.sendTransacEmail({ sender: { email: "john.ren.unimportant@gmail.com" }, to: [{ email: "john.ren.contact@gmail.com", name: "John" }], htmlContent: `${link}`, subject: "抢到票了！！" }).then(function (data) {
-                                }, function (error) {
-                                    throw error;
-                                });
+                                sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
                                 let successMessage = moment().format() + ' [SUCCESS] ' + link + '\n';
                                 log += successMessage;
                                 fs.appendFileSync('log', successMessage);
