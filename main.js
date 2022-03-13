@@ -4,13 +4,22 @@ var fs = require('fs');
 var execSync = require('child_process').execSync;
 var SibApiV3Sdk = require('sib-api-v3-sdk');
 var http = require('http');
-try {
-    let captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
-    console.log(captcha, captcha.match(/[0-9]{4}/));
-} catch (error) {
-    console.log('Exec Error');
-    throw error;
-}
+const nodeCron = require('node-cron');
+
+const SLEEP_TIME = 500;
+const LONG_SLEEP_TIME = 500;
+let BLIND_MODE = false;
+// let DEV_MODE = true;
+let lineCode = "HKGZHO";
+let log = "";
+let time = 0;
+// try {
+//     let captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
+//     console.log(captcha, captcha.match(/[0-9]{4}/));
+// } catch (error) {
+//     console.log('Exec Error');
+//     throw error;
+// }
 var defaultClient = SibApiV3Sdk.ApiClient.instance;
 // Configure API key authorization: api-key
 var apiKey = defaultClient.authentications['api-key'];
@@ -21,30 +30,28 @@ var apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 let sendEmail = (content, subject) => {
     apiInstance.sendTransacEmail({
         sender: { email: "john.ren.unimportant@gmail.com", name: "Huangtu" },
-        to: [{ email: "john.ren.contact@gmail.com", name: "John" }, { email: "xmhdct@163.com", name: "Lovely Lovely Cat" }],
+        to: [
+            { email: "john.ren.contact@gmail.com", name: "John" },
+            { email: "xmhdct@163.com", name: "Lovely Lovely Cat" }
+        ],
         htmlContent: content, subject: subject
     }).then(function (data) {
     }, function (error) {
-        let errorMessage = moment().format() + ' [ERROR] ' + error?.toString();
-        console.log(errorMessage);
-        log += errorMessage + '\n';
-        fs.appendFileSync('log', errorMessage + '\n');
+        appendLog('ERROR', error?.toString());
     });
 };
-let log = "";
-let time = 0;
+
 http.createServer(function (request, response) {
-
-    // 发送 HTTP 头部 
-    // HTTP 状态值: 200 : OK
-    // 内容类型: text/plain
     response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-
-    // 发送响应数据 "Hello World"
     response.end(`I have fetched ${time} times. Good luck!\n${log}`);
 }).listen(process.env.PORT || 8888);
-// var sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); // SendSmtpEmail | Values to send a transactional email
 
+function appendLog(tag, message) {
+    message = moment().tz('Asia/Shanghai').format() + ` [${tag}] ` + message;
+    log += message + '\n';
+    fs.appendFileSync('log', message + '\n');
+    console.log(message);
+}
 
 var api = {
     login: () => ({
@@ -146,10 +153,9 @@ var api = {
     })
 };
 
-
-const SLEEP_TIME = 500;
-const LONG_SLEEP_TIME = 500;
-let lineCode = "HKGZHO";
+Array.prototype.sample = function () {
+    return this[Math.floor(Math.random() * this.length)];
+};
 
 
 function range(start, end) {
@@ -160,6 +166,28 @@ function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
+}
+function enterBlindMode() {
+    BLIND_MODE = true;
+    sendEmail(`吱吱吱，冲冲冲`, "吱！启动疯狂抢票模式");
+    appendLog('MODE', "进入疯狂抢票模式");
+}
+function exitBlindMode() {
+    BLIND_MODE = false;
+    sendEmail(``, "疯狂抢票模式结束");
+    appendLog('MODE', "疯狂抢票模式结束");
+}
+nodeCron.schedule("0 30 11 * * 2", function () {
+    enterBlindMode();
+}, { timezone: "Asia/Shanghai" });
+nodeCron.schedule("0 0 14 * * 2", function () {
+    exitBlindMode();
+}, { timezone: "Asia/Shanghai" });
+nodeCron.schedule("0 0 21 * * *", function () {
+    sendEmail(`我今天挖了${time}个洞，发现了以下情况:\n${log}`, "吱！汇报进度");
+}, { timezone: "Asia/Shanghai" });
+if (BLIND_MODE) {
+    enterBlindMode();
 }
 async function main() {
     let cookie = "";
@@ -178,89 +206,90 @@ async function main() {
     //     jwt = response.data.jwt;
     // }, 1000 * 60 * 60);
     sendEmail(`吱吱吱，我会认真工作的。`, "吱！黄兔开工了");
-    setInterval(() => {
-        sendEmail(`我今天挖了${time}个洞，发现了以下情况:\n${log}`, "吱！汇报进度");
-    }, 60 * 1000 * 60 * 24);
+    appendLog('START', '黄兔开工了');
+
+
     while (true) {
         time++;
         try {
-            let day = parseInt(moment().format('d'));
-            day = day == 0 ? 7 : day;
-            let dayRange = range(2, 14 - day);
-            let dateArray = dayRange.map(d =>
-                moment().add(d, 'd').format("YYYY-MM-D"));
-            dateArray = dateArray.sort(() => Math.random() - 0.5);
-            console.log("Refetch ...");
-            // console.log(dateArray);
+            let dateArray;
+            if (!BLIND_MODE) {
+                let day = parseInt(moment().format('d'));
+                day = day == 0 ? 7 : day;
+                day = day == 1 ? 8 : day;
+                let dayRange = range(2, 14 - day);
+                dateArray = dayRange.map(d =>
+                    moment().add(d, 'd').format("YYYY-MM-D"));
+                dateArray = dateArray.sort(() => Math.random() - 0.5);
+            } else {
+                let day = parseInt(moment().format('d'));
+                day = day == 0 ? 7 : day;
+                let dayRange = range(8 - day, 14 - day);
+                // dayRange = range(2, 4);
+                dateArray = dayRange.map(d =>
+                    moment().add(d, 'd').format("YYYY-MM-D"));
+                dateArray = dateArray.sort(() => Math.random() - 0.5);
+            }
+            // console.log("Retry ...");
+            console.log(dateArray);
             for (let date of dateArray) {
-                let response = await axios(api.query(date, lineCode))
-                    .then((response) => (
-                        response.data
-                    ))
+                let availableTime;
+                if (!BLIND_MODE) {
+                    let response = await axios(api.query(date, lineCode))
+                        .then((response) => (
+                            response.data
+                        ))
+                        .catch(error => { throw error; });
+                    await sleep(SLEEP_TIME);
+                    if (response?.code != "SUCCESS") { throw new Error("Query fail: " + JSON.stringify(response)); }
+                    if (response?.code == "SUCCESS") {
+                        let responseData = response.responseData;
+                        // console.log(responseData);
+                        responseData = responseData?.filter(d => parseInt(d.maxPeople) > 0);
+                        if (responseData && responseData.length > 0) {
+                            responseData = responseData.sort((b, a) => a.maxPeople - b.maxPeople);
+                            availableTime = responseData[0].beginTime;
+                            appendLog('FOUND', date + ' ' + availableTime);
+                        } else { continue; }
+                    }
+                } else {
+                    availableTime = [11, 12, 14, 15, 17, 18].map(t => t + ":00:00").sample();
+                }
+                let captcha = "";
+                do {
+                    let response = await axios(api.captcha(cookie, lineCode))
+                        .then((response) => {
+                            // console.log(response.headers);
+                            return response.data;
+                        })
+                        .catch(error => { throw error; });
+                    // if (response?.code != "SUCCESS") { throw new Error(response?.message); }
+                    await sleep(SLEEP_TIME);
+                    fs.writeFileSync("captcha.png", response);
+                    try {
+                        captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
+                    } catch (error) {
+                        throw error;
+                    }
+                } while (!captcha.match(/[0-9]{4}/));
+                console.log(`Captcha Solved: ${captcha}`);
+                // console.log(api.buy(jwt, cookie, date, availableTime, captcha, lineCode));
+                console.log(date, availableTime);
+                let response = await axios(api.buy(jwt, cookie, date, availableTime, captcha, lineCode))
+                    .then((response) => {
+                        // console.log(response.headers);
+                        return response.data;
+                    })
                     .catch(error => { throw error; });
                 await sleep(SLEEP_TIME);
-
-                // console.log(response);
-                if (response?.code != "SUCCESS") { throw new Error("Query fail: " + JSON.stringify(response)); }
+                if (response?.code != "SUCCESS") { throw new Error("Buy fail: " + JSON.stringify(response)); }
                 if (response?.code == "SUCCESS") {
-                    let responseData = response.responseData;
-                    console.log(responseData);
-                    if (responseData.length > 0) {
-                        responseData = responseData.filter(d => parseInt(d.maxPeople) > 0);
-                        if (responseData.length > 0) {
-                            responseData = responseData.sort((b, a) => a.maxPeople - b.maxPeople);
-                            let availableTime = responseData[0].beginTime;
-                            console.log("Found Available: ", date, availableTime);
-                            try {
-                                let errorMessage = moment().format() + ' [FOUND] ' + date + ' ' + availableTime + '\n';
-                                log += errorMessage;
-                                fs.appendFileSync('log', errorMessage);
-                            } catch (error) {
-
-                            }
-                            let captcha = "";
-                            do {
-                                let response = await axios(api.captcha(cookie, lineCode))
-                                    .then((response) => {
-                                        // console.log(response.headers);
-                                        return response.data;
-                                    })
-                                    .catch(error => { throw error; });
-                                // if (response?.code != "SUCCESS") { throw new Error(response?.message); }
-                                await sleep(SLEEP_TIME);
-
-                                // console.log(response);
-                                fs.writeFileSync("captcha.png", response);
-                                try {
-                                    captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
-                                } catch (error) {
-                                    console.log('Exec Error');
-                                    throw error;
-                                }
-                            } while (!captcha.match(/[0-9]{4}/));
-                            console.log(`Captcha Solved: ${captcha}`);
-                            // console.log(api.buy(jwt, cookie, date, availableTime, captcha, lineCode));
-                            let response = await axios(api.buy(jwt, cookie, date, availableTime, captcha, lineCode))
-                                .then((response) => {
-                                    // console.log(response.headers);
-                                    return response.data;
-                                })
-                                .catch(error => { throw error; });
-                            await sleep(SLEEP_TIME);
-                            if (response?.code != "SUCCESS") { throw new Error("Buy fail: " + JSON.stringify(response)); }
-                            if (response?.code == "SUCCESS") {
-                                let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
-                                console.log(link);
-                                sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
-                                let successMessage = moment().format() + ' [SUCCESS] ' + link + '\n';
-                                log += successMessage;
-                                fs.appendFileSync('log', successMessage);
-                                // return;
-                                // break;
-                            }
-                        }
-                    }
-
+                    let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
+                    sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
+                    appendLog('SUCCESS', link);
+                    await sleep(60 * 1000 * 15);
+                    // return;
+                    // break;
                 }
             }
         } catch (error) {
@@ -273,10 +302,7 @@ async function main() {
                 jwt = response.data.jwt;
                 console.log('Log in ...');
             } else {
-                let errorMessage = moment().format() + ' [ERROR] ' + errorText;
-                console.log(errorMessage);
-                log += errorMessage + '\n';
-                fs.appendFileSync('log', errorMessage + '\n');
+                appendLog('ERROR', errorText);
             }
         }
         await sleep(LONG_SLEEP_TIME);

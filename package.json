@@ -6,6 +6,8 @@
   "dependencies": {
     "axios": "^0.26.1",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
+    "node-cron": "^3.0.0",
     "nodemailer": "^6.7.2",
     "sib-api-v3-sdk": "^8.2.1"
   }
