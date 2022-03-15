@@ -6,8 +6,8 @@ var SibApiV3Sdk = require('sib-api-v3-sdk');
 var http = require('http');
 const nodeCron = require('node-cron');
 
-const SLEEP_TIME = 500;
-const LONG_SLEEP_TIME = 500;
+const SLEEP_TIME = 150;
+const LONG_SLEEP_TIME = 150;
 let BLIND_MODE = false;
 // let DEV_MODE = true;
 let lineCode = "HKGZHO";
@@ -40,12 +40,16 @@ let sendEmail = (content, subject) => {
         appendLog('ERROR', error?.toString());
     });
 };
+// try {
 
-http.createServer(function (request, response) {
-    response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    response.end(`I have fetched ${time} times. Good luck!\n${log}`);
-}).listen(process.env.PORT || 8888);
+//     http.createServer(function (request, response) {
+//         response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+//         response.end(`I have fetched ${time} times. Good luck!\n${log}`);
+//     }).listen(process.env.PORT || 8888);
 
+// } catch (error) {
+
+// }
 function appendLog(tag, message) {
     message = moment().tz('Asia/Shanghai').format() + ` [${tag}] ` + message;
     log += message + '\n';
@@ -68,8 +72,8 @@ var api = {
             'content-length': ' 157',
             'content-type': ' application/json;charset=UTF-8',
             'dnt': ' 1',
-            'origin': ' http://192.168.56.1:8081',
-            'referer': ' http://192.168.56.1:8081/',
+            'origin': ' https://i.hzmbus.com',
+            'referer': ' https://i.hzmbus.com/webhtml/personal_center',
             'sec-ch-ua': ' " Not A;Brand";v="99", "Chromium";v="99", "Google Chrome";v="99"',
             'sec-ch-ua-mobile': ' ?0',
             'sec-ch-ua-platform': ' "Windows"',
@@ -149,7 +153,11 @@ var api = {
             'sec-fetch-site': ' same-origin',
             'user-agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
         },
-        data: JSON.stringify({ "ticketData": bookDate, "lineCode": lineCode, "startStationCode": lineCode.slice(0, 3), "endStationCode": lineCode.slice(3, 6), "boardingPointCode": lineCode.slice(0, 3) + "01", "breakoutPointCode": lineCode.slice(3, 6) + "01", "currency": "2", "ticketCategory": "1", "tickets": [{ "ticketType": "00", "idCard": "310104199905174414", "idType": 1, "userName": "任彦齐", "telNum": "" }], "amount": 6500, "feeType": 9, "totalVoucherpay": 0, "voucherNum": 0, "voucherStr": "", "totalBalpay": 0, "totalNeedpay": 6500, "bookBeginTime": bookTime, "bookEndTime": bookTime, "captcha": captcha, "appId": "HZMBWEB_HK", "joinType": "WEB", "version": "2.7.202203.1092", "equipment": "PC" })
+        data: JSON.stringify({
+            "ticketData": bookDate, "lineCode": lineCode, "startStationCode": lineCode.slice(0, 3), "endStationCode": lineCode.slice(3, 6), "boardingPointCode": lineCode.slice(0, 3) + "01", "breakoutPointCode": lineCode.slice(3, 6) + "01", "currency": "2",
+            "ticketCategory": "1", "tickets": [{ "ticketType": "00", "idCard": "310104199905174414", "idType": 1, "userName": "任彦齐", "telNum": "" }], "amount": 6500,
+            "feeType": 9, "totalVoucherpay": 0, "voucherNum": 0, "voucherStr": "", "totalBalpay": 0, "totalNeedpay": 6500, "bookBeginTime": bookTime, "bookEndTime": bookTime, "captcha": captcha, "appId": "HZMBWEB_HK", "joinType": "WEB", "version": "2.7.202203.1092", "equipment": "PC"
+        })
     })
 };
 
@@ -169,20 +177,20 @@ function sleep(ms) {
 }
 function enterBlindMode() {
     BLIND_MODE = true;
-    sendEmail(`吱吱吱，冲冲冲`, "吱！启动疯狂抢票模式");
+    // sendEmail(`吱吱吱，冲冲冲`, "吱！启动疯狂抢票模式");
     appendLog('MODE', "进入疯狂抢票模式");
 }
 function exitBlindMode() {
     BLIND_MODE = false;
-    sendEmail(``, "疯狂抢票模式结束");
+    // sendEmail(``, "疯狂抢票模式结束");
     appendLog('MODE', "疯狂抢票模式结束");
 }
 nodeCron.schedule("0 30 11 * * 2", function () {
     enterBlindMode();
 }, { timezone: "Asia/Shanghai" });
-nodeCron.schedule("0 0 14 * * 2", function () {
-    exitBlindMode();
-}, { timezone: "Asia/Shanghai" });
+// nodeCron.schedule("0 0 14 * * 2", function () {
+//     exitBlindMode();
+// }, { timezone: "Asia/Shanghai" });
 nodeCron.schedule("0 0 21 * * *", function () {
     sendEmail(`我今天挖了${time}个洞，发现了以下情况:\n${log}`, "吱！汇报进度");
 }, { timezone: "Asia/Shanghai" });
@@ -190,14 +198,24 @@ if (BLIND_MODE) {
     enterBlindMode();
 }
 async function main() {
-    let cookie = "";
-    let jwt = "";
-    let response = await axios(api.login())
-        .catch(error => { throw error; });
+    let cookie = "PHPSESSID=49hgk3dvo5dq0jn4ql5f0bevlf";
+    let jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJla2p0X2lzcyIsImlhdCI6MTY0NzM0ODkxMiwiZXhwIjoxNjQ3MzU2MTEyLCJhdWQiOiJla2p0X2NsaWVudF9hdWQiLCJzdWIiOiJla2p0X2NsaWVudF9zdWIiLCJuYmYiOjE2NDczNDg5MTIsImp0aSI6ImVranRfanRpXzE2NDczNDg5MTIiLCJkYXRhIjoiRUJoVXp4OW5ucnlLbUhcL1IxZ1Z0NEFoRzZ2dGZmXC8yRVpWSVR1bklkZ0FhMGRNRDJHRk5UQVVDR1Y0WUdcLzY2cEY1UHY0YkdKanJ6S3JXdGlDa3BIbldaYTBHZ1RTWjR1YXNxTFF1RUg4XC9lVHByUjdIWnpwa0NIdVZpTUVNTDErMGtyeGI2cCtcL1d5ZnFYR0kyNUFXUDR5ZHVKWDlaWHVvQ2JPeEs1M2RQVW1OdCtZK1VKQ2ZqaVJCbmhvK01yT3JTekpaXC9nN2pYNktoQXhGVTlSY0xDcHJERzg2dmJqNEc5S1V2dzBqNWdWVElMSFhxaFltOHgrRUdIQVVKa2tadExzT1ZicUNYbis1M01TS2UxWFwvUHpcL2NqNlB3YTZjVDZMY2J1cm4waUlHU2FJcE1JRk9Pd2QxUnU0TnZ6Qk5KV1laT08wUXRQR1F3ZnkySlcrSzdWWDZqb0NLclZsT25SVUNzbTgyNjBUTTFYdXA0ZHJwOWdIUjBBa21zRVNsOEpTWWc2MytKRzliT1F6VzhpR2xyT3VnVE5FUGxHWFZySWd1MnBZVXdVYkNyZ3NWVXcxeGJSb3ZHVWlFV2lKMnpqTmZLTXdkSUpQaVZKSmpWTjNOcDJqV1lta2Ftb0F6eUFWTVRFdnVZTW5JaWlIZnF5bTFlU3A4blVKM09Od2VuZkZaSlhMWFJqVVhvSU94UWNLMVFERnJ0akxMWjFFM1V1ZG9vdFozREpkUUd3ZzBJWURxb0lEdjhzVStGc2FjWVl4YUtVeEljckVlRjhKQis1QUZoTFdLd0RISU1FNkl6cG9xWVVWeTdrYkhXakdTYUZCcXJWQ0ZiS2xZVjAxMHB0SEFLd0kxV05hQUR4amxieDNyc3ZFaUlwRzlaamwzRzF1WW9IaWdjUkNCSnZ3cFhLNThoZUpJQ1wvekx5TVwvRnM5U0Y4WTZuK2lPWCtaVVJmZGRBVHVyY2o4QlVJSTAxVE9TRnB4VWxybFZZaUdOZjRHZ2ZKV00wKzVXaE05WkFJQWtqOGpcL2xNZGZMNHpuQWdUZEJpdzh0UDBCaXhrQVZYc21tOG1kS0tKNTNwWWp3VXIwNGcrMGphRExwMUtOMHZXVFJ5dkE2UzZpbHU2dk1kT3YzTm1JVzdMOTJ0aGJwUjVqWk1wdzBMY2RnWms2WnZkMFkrdjlTSEZIc1FQK1JOcHN6WDZaaEI4UzRaaEI2dENtcXdtTjRBTmVyNlZmOTBvRXcwWkhtZTBzZlJRNjRJRHQyZEpIdzBxTXlZXC82aHpialJcL3dzTENWRGQ5dUdqV3I2cVdYb3lDb1lhK2JSUUg0d3ljMU9jWVhJSUN4bDNjSElJUlRqSlVEQjNJSDNEakwifQ.lqTZceFk4c_AtlrMGfw2BRw8BKsy1zwiD_iTAamQSfI";
+    async function login() {
+        console.log(
+            'login...'
+        );
+        response = await axios(api.login())
+            .catch(async error => { console.log(error.toString()); await login(); });
+        if (response?.headers && response?.data?.jwt) {
+            cookie = response.headers['set-cookie'][0].split(';')[0];
+            jwt = response.data.jwt;
+        } else { await login(); }
+    }
+    // await login();
+
     await sleep(SLEEP_TIME);
-    cookie = response.headers['set-cookie'][0].split(';')[0];
-    jwt = response.data.jwt;
-    console.log('Log in ...');
+
+    console.log('Log in succeed');
     // setInterval(async () => {
     //     let response = await axios(api.login())
     //         .catch(error => { throw error; });
@@ -205,7 +223,7 @@ async function main() {
     //     cookie = response.headers['set-cookie'][0].split(';')[0];
     //     jwt = response.data.jwt;
     // }, 1000 * 60 * 60);
-    sendEmail(`吱吱吱，我会认真工作的。`, "吱！黄兔开工了");
+    // sendEmail(`吱吱吱，我会认真工作的。`, "吱！黄兔开工了");
     appendLog('START', '黄兔开工了');
 
 
@@ -217,7 +235,8 @@ async function main() {
                 let day = parseInt(moment().format('d'));
                 day = day == 0 ? 7 : day;
                 day = day == 1 ? 8 : day;
-                let dayRange = range(2, 14 - day);
+                // let dayRange = range(2, 14 - day);
+                let dayRange = range(8 - day, 14 - day);
                 dateArray = dayRange.map(d =>
                     moment().add(d, 'd').format("YYYY-MM-D"));
                 dateArray = dateArray.sort(() => Math.random() - 0.5);
@@ -229,72 +248,88 @@ async function main() {
                 dateArray = dayRange.map(d =>
                     moment().add(d, 'd').format("YYYY-MM-D"));
                 dateArray = dateArray.sort(() => Math.random() - 0.5);
+                // dateArray = ['2022-03-26', '2022-03-21', '2022-03-26', '2022-03-27'].sample();
             }
             // console.log("Retry ...");
-            console.log(dateArray);
-            for (let date of dateArray) {
-                let availableTime;
-                if (!BLIND_MODE) {
-                    let response = await axios(api.query(date, lineCode))
-                        .then((response) => (
-                            response.data
-                        ))
-                        .catch(error => { throw error; });
-                    await sleep(SLEEP_TIME);
-                    if (response?.code != "SUCCESS") { throw new Error("Query fail: " + JSON.stringify(response)); }
-                    if (response?.code == "SUCCESS") {
-                        let responseData = response.responseData;
-                        // console.log(responseData);
-                        responseData = responseData?.filter(d => parseInt(d.maxPeople) > 0);
-                        if (responseData && responseData.length > 0) {
-                            responseData = responseData.sort((b, a) => a.maxPeople - b.maxPeople);
-                            availableTime = responseData[0].beginTime;
-                            appendLog('FOUND', date + ' ' + availableTime);
-                        } else { continue; }
-                    }
-                } else {
-                    availableTime = [11, 12, 14, 15, 17, 18].map(t => t + ":00:00").sample();
+            date = dateArray.sample();
+            console.log("Trying:", date);
+            let availableTime;
+            if (!BLIND_MODE) {
+                let response = await axios(api.query(date, lineCode))
+                    .then((response) => (
+                        response.data
+                    ))
+                    .catch(error => { throw error; });
+                await sleep(SLEEP_TIME);
+                if (response?.code != "SUCCESS") { throw new Error("Query fail: " + JSON.stringify(response)); }
+                if (response?.code == "SUCCESS") {
+                    let responseData = response.responseData;
+                    // console.log(responseData);
+                    responseData = responseData?.filter(d => parseInt(d.maxPeople) > 0);
+                    if (responseData && responseData.length > 0) {
+                        responseData = responseData.sort((b, a) => a.maxPeople - b.maxPeople);
+                        availableTime = responseData[0].beginTime;
+                        appendLog('FOUND', date + ' ' + availableTime);
+                    } else { continue; }
                 }
-                let captcha = "";
-                do {
-                    let response = await axios(api.captcha(cookie, lineCode))
-                        .then((response) => {
-                            // console.log(response.headers);
-                            return response.data;
-                        })
-                        .catch(error => { throw error; });
-                    // if (response?.code != "SUCCESS") { throw new Error(response?.message); }
-                    await sleep(SLEEP_TIME);
-                    fs.writeFileSync("captcha.png", response);
-                    try {
-                        captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
-                    } catch (error) {
-                        throw error;
-                    }
-                } while (!captcha.match(/[0-9]{4}/));
-                console.log(`Captcha Solved: ${captcha}`);
-                // console.log(api.buy(jwt, cookie, date, availableTime, captcha, lineCode));
-                console.log(date, availableTime);
-                let response = await axios(api.buy(jwt, cookie, date, availableTime, captcha, lineCode))
+            } else {
+                availableTime = [11, 12, 14, 15, 17, 18].map(t => t + ":00:00").sample();
+                // availableTime = [18].map(t => t + ":00:00").sample();
+            }
+            if (!jwt) { throw new Error("Empty JWT"); }
+            let captcha = "";
+            do {
+                let response = await axios(api.captcha(cookie, lineCode))
                     .then((response) => {
                         // console.log(response.headers);
                         return response.data;
                     })
-                    .catch(error => { throw error; });
+                    .catch(error => { throw new Error("Captcha fail: " + error?.message); });
+                // if (response?.code != "SUCCESS") { throw new Error(response?.message); }
                 await sleep(SLEEP_TIME);
-                if (response?.code != "SUCCESS") { throw new Error("Buy fail: " + JSON.stringify(response)); }
-                if (response?.code == "SUCCESS") {
-                    let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
-                    sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
-                    appendLog('SUCCESS', link);
-                    await sleep(60 * 1000 * 15);
-                    // return;
-                    // break;
+                fs.writeFileSync("captcha.png", response);
+                try {
+                    captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
+                } catch (error) {
+                    throw error;
                 }
+            } while (!captcha.match(/[0-9]{4}/));
+            console.log(`Captcha Solved: ${captcha}`);
+            // console.log(api.buy(jwt, cookie, date, availableTime, captcha, lineCode));
+            console.log('Buying', date, availableTime);
+            let response;
+            async function buy() {
+                response = await axios(api.buy(jwt, cookie, date, availableTime, captcha, lineCode))
+                    .then(async (response) => {
+                        // console.log(response.headers);
+                        if (response?.data?.code != "SUCCESS") {
+                            throw new Error(response?.data?.message || response?.data?.code);
+                        } else {
+                            return response.data;
+                        }
+                    })
+                    .catch(async error => {
+                        console.log("Buying error:", error?.message);
+                        if (error.message != "預約班次錯誤或不存在" && error.message != "預約人數超出當前可預約的總人數" && error.message != "验证码不正确") {
+                            await buy();
+                        }
+
+                    });
+            };
+            await buy();
+            await sleep(SLEEP_TIME);
+            // if (response?.code != "SUCCESS") { throw new Error("Buy fail: " + JSON.stringify(response)); }
+            if (response?.code == "SUCCESS") {
+                let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
+                sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
+                appendLog('SUCCESS', link);
+                await sleep(60 * 1000 * 15);
+                // return;
+                // break;
             }
         } catch (error) {
             let errorText = error.toString();
-            if (error.message == "请先登录") {
+            if (error.message == "请先登录" || (!jwt)) {
                 let response = await axios(api.login())
                     .catch(error => { throw error; });
                 await sleep(SLEEP_TIME);
