@@ -211,7 +211,7 @@ async function main() {
             jwt = response.data.jwt;
         } else { await login(); }
     }
-    // await login();
+    await login();
 
     await sleep(SLEEP_TIME);
 
