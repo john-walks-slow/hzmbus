@@ -40,16 +40,14 @@ let sendEmail = (content, subject) => {
         appendLog('ERROR', error?.toString());
     });
 };
-// try {
+//try {
 
-//     http.createServer(function (request, response) {
-//         response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-//         response.end(`I have fetched ${time} times. Good luck!\n${log}`);
-//     }).listen(process.env.PORT || 8888);
+ http.createServer(function (request, response) {
+       response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+         response.end(`I have fetched ${time} times. Good luck!\n${log}`);
+     }).listen(process.env.PORT || 8888);
 
-// } catch (error) {
-
-// }
+// } catch (error) { }
 function appendLog(tag, message) {
     message = moment().tz('Asia/Shanghai').format() + ` [${tag}] ` + message;
     log += message + '\n';
