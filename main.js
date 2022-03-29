@@ -8,7 +8,7 @@ const nodeCron = require('node-cron');
 
 const SLEEP_TIME = 150;
 const LONG_SLEEP_TIME = 150;
-let BLIND_MODE = false;
+let BLIND_MODE = true;
 // let DEV_MODE = true;
 let lineCode = "HKGZHO";
 let log = "";
