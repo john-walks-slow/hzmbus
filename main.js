@@ -272,7 +272,7 @@ async function main() {
                 // dateArray = dayRange.map(d =>
                 //     moment().add(d, 'd').format("YYYY-MM-D"));
                 // dateArray = dateArray.sort(() => Math.random() - 0.5);
-                dateArray = ['2022-04-04', '2022-04-08', '2022-04-07'];
+                dateArray = ['2022-04-04', '2022-04-08', '2022-04-07', '2022-04-05', '2022-04-06'];
             }
             // console.log("Retry ...");
             date = dateArray.sample();
