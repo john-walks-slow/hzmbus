@@ -42,14 +42,14 @@ let sendEmail = (content, subject) => {
 };
 //try {
 
- http.createServer(function (request, response) {
-       response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-         response.end(`I have fetched ${time} times. Good luck!\n${log}`);
-     }).listen(process.env.PORT || 8888);
+http.createServer(function (request, response) {
+    response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end(`I have fetched ${time} times. Good luck!\n${log}`);
+}).listen(process.env.PORT || 8888);
 
 // } catch (error) { }
 function appendLog(tag, message) {
-    message = moment().tz('Asia/Shanghai').format() + ` [${tag}] ` + message;
+    message = moment().tz('Asia/Shanghai').format() + ` ${tag ? `[${tag}]` : ""} ` + message;
     log += message + '\n';
     fs.appendFileSync('log', message + '\n');
     console.log(message);
@@ -195,39 +195,65 @@ nodeCron.schedule("0 0 21 * * *", function () {
 if (BLIND_MODE) {
     enterBlindMode();
 }
-async function main() {
-    let cookie = "PHPSESSID=49hgk3dvo5dq0jn4ql5f0bevlf";
-    let jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJla2p0X2lzcyIsImlhdCI6MTY0NzM0ODkxMiwiZXhwIjoxNjQ3MzU2MTEyLCJhdWQiOiJla2p0X2NsaWVudF9hdWQiLCJzdWIiOiJla2p0X2NsaWVudF9zdWIiLCJuYmYiOjE2NDczNDg5MTIsImp0aSI6ImVranRfanRpXzE2NDczNDg5MTIiLCJkYXRhIjoiRUJoVXp4OW5ucnlLbUhcL1IxZ1Z0NEFoRzZ2dGZmXC8yRVpWSVR1bklkZ0FhMGRNRDJHRk5UQVVDR1Y0WUdcLzY2cEY1UHY0YkdKanJ6S3JXdGlDa3BIbldaYTBHZ1RTWjR1YXNxTFF1RUg4XC9lVHByUjdIWnpwa0NIdVZpTUVNTDErMGtyeGI2cCtcL1d5ZnFYR0kyNUFXUDR5ZHVKWDlaWHVvQ2JPeEs1M2RQVW1OdCtZK1VKQ2ZqaVJCbmhvK01yT3JTekpaXC9nN2pYNktoQXhGVTlSY0xDcHJERzg2dmJqNEc5S1V2dzBqNWdWVElMSFhxaFltOHgrRUdIQVVKa2tadExzT1ZicUNYbis1M01TS2UxWFwvUHpcL2NqNlB3YTZjVDZMY2J1cm4waUlHU2FJcE1JRk9Pd2QxUnU0TnZ6Qk5KV1laT08wUXRQR1F3ZnkySlcrSzdWWDZqb0NLclZsT25SVUNzbTgyNjBUTTFYdXA0ZHJwOWdIUjBBa21zRVNsOEpTWWc2MytKRzliT1F6VzhpR2xyT3VnVE5FUGxHWFZySWd1MnBZVXdVYkNyZ3NWVXcxeGJSb3ZHVWlFV2lKMnpqTmZLTXdkSUpQaVZKSmpWTjNOcDJqV1lta2Ftb0F6eUFWTVRFdnVZTW5JaWlIZnF5bTFlU3A4blVKM09Od2VuZkZaSlhMWFJqVVhvSU94UWNLMVFERnJ0akxMWjFFM1V1ZG9vdFozREpkUUd3ZzBJWURxb0lEdjhzVStGc2FjWVl4YUtVeEljckVlRjhKQis1QUZoTFdLd0RISU1FNkl6cG9xWVVWeTdrYkhXakdTYUZCcXJWQ0ZiS2xZVjAxMHB0SEFLd0kxV05hQUR4amxieDNyc3ZFaUlwRzlaamwzRzF1WW9IaWdjUkNCSnZ3cFhLNThoZUpJQ1wvekx5TVwvRnM5U0Y4WTZuK2lPWCtaVVJmZGRBVHVyY2o4QlVJSTAxVE9TRnB4VWxybFZZaUdOZjRHZ2ZKV00wKzVXaE05WkFJQWtqOGpcL2xNZGZMNHpuQWdUZEJpdzh0UDBCaXhrQVZYc21tOG1kS0tKNTNwWWp3VXIwNGcrMGphRExwMUtOMHZXVFJ5dkE2UzZpbHU2dk1kT3YzTm1JVzdMOTJ0aGJwUjVqWk1wdzBMY2RnWms2WnZkMFkrdjlTSEZIc1FQK1JOcHN6WDZaaEI4UzRaaEI2dENtcXdtTjRBTmVyNlZmOTBvRXcwWkhtZTBzZlJRNjRJRHQyZEpIdzBxTXlZXC82aHpialJcL3dzTENWRGQ5dUdqV3I2cVdYb3lDb1lhK2JSUUg0d3ljMU9jWVhJSUN4bDNjSElJUlRqSlVEQjNJSDNEakwifQ.lqTZceFk4c_AtlrMGfw2BRw8BKsy1zwiD_iTAamQSfI";
-    async function login() {
-        console.log(
-            'login...'
-        );
-        response = await axios(api.login())
-            .catch(async error => { console.log(error.toString()); await login(); });
-        if (response?.headers && response?.data?.jwt) {
-            cookie = response.headers['set-cookie'][0].split(';')[0];
-            jwt = response.data.jwt;
-        } else { await login(); }
+async function customAxios(name, query, validate, retry = true, maxRetry = 5) {
+    let response;
+    let request = async () => {
+        response = await axios(query);
+        // .then((response) => (
+        // response.data
+        // ));
+        if (typeof validate == "boolean") {
+            if (!validate) {
+                throw new Error(`${response?.data?.message || response?.data?.messages || JSON.stringify(response?.data)}`);
+            }
+        }
+        if (typeof validate == "function") {
+            if (!validate(response)) {
+                throw new Error(`${response?.data?.message || response?.data?.messages || JSON.stringify(response?.data)}`);
+            }
+        }
+
+
+        await sleep(SLEEP_TIME);
+        return response;
+    };
+    try {
+        return await request();
+    } catch (error) {
+        error.tag = name.toUpperCase();
+        // console.log(`Error in ${name}: ${error.toString()}`);
+        if (typeof retry == "boolean") {
+            if (retry) {
+                console.log(`Retrying ${name}: ${error.toString()}`);
+                return await request();
+            } else { throw error; }
+        }
+        if (typeof retry == "function") {
+            if (retry(response)) {
+                console.log(`Retrying ${name}: ${error.toString()}`);
+                return await request();
+            } else { throw error; }
+        }
     }
-    await login();
+}
+async function main() {
+    let cookie;
+    let jwt;
+    // cookie = "PHPSESSID=t64rlbt0b7b14kgv5fpbbbbo14";
+    // jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJla2p0X2lzcyIsImlhdCI6MTY0ODUyOTMyNiwiZXhwIjoxNjQ4NTM2NTI2LCJhdWQiOiJla2p0X2NsaWVudF9hdWQiLCJzdWIiOiJla2p0X2NsaWVudF9zdWIiLCJuYmYiOjE2NDg1MjkzMjYsImp0aSI6ImVranRfanRpXzE2NDg1MjkzMjYiLCJkYXRhIjoiZ0J4ZmVaMmtoOGxPSXJXYjZFZ0dTZW0zZzhjQ2t6RWk3VGJ4bDc5SitIbEx0YTI0WUJmMllNQnJtdlpBREJtZUlLZmRUZklwVHNXM3hqN1BkRGs0XC9KQ0RVeDZLdmFlN3dMdjc5OHN0aUFibjFmK01OamFlem11MmZYN2o3bXVBVjVpaVlsRUJDKytFd21WdG5WOWNyeGVoVEw5WFZnbW1lMGpjUVREbFpEbW5sbTRQN0Q2bUVocWFEbnBWUnBBajRGV2JOSHVZSE5sYTZvaFVXQVZGZ3BSbTh0ZWtnZ3pvdmtieUtkcjgzXC9IXC9wbzRcL0JpUVdIRE5iYVdDYUszWStJRjY5REpMdFFqRE5qbmNqNHJxbU5SaEJsU0dnWU1menBvcStrcHR4enZmMUNpdFBnMFNBcVdZSmh3d3pIN0V5ekZQMVNUSzY2SWtJZFBUZjVmQ1IxSzdQcERMQkd5VHA3MGM4K2ZqMUlHcm54TEtiSDd4dXhPT1VzXC9kc1d0ckVFMkszOCtycnlXUUk0b1VmaVpDSVQ4Z0Jsc0ZkSzdndTZaS2FQelR4TjhOQ0RJRytCV3dpRnZvd2FVXC9VR2Z0dkVoeTRUc1Y1Q2orQjlXc3Q1SVNtWFBZMG1OaldzdFVNVkFTMVNvWk9wa0lXWUp2RHdwWm9GaGRFMnFSQkl0TWlNYkNVV1lIZmRRT2pUM3BuZzZxQmhIZThNbFN2Y1M0N0h4SkE0QWtDMDJDTWtDUE9xUG9mT2xEMVBxQzBKMUhaK2JRa2tXUnluSXhqbVNkS1RYblNGXC9OYTE0b0h0U2lhZStrOUlFb3d1cVI1cGhmbUtkcDg5dkNESGtnUXRsR2VLMjZla0JOQnMwUUU4MmFGd2JXaXpTcXJvWXc0SWdzMk1LaWl2VEhVUXJOaDlXYnVDOWZaS25iYldpRVJzVHRoY2VLU1wvY3VIa2ZZNE5EbDNTclhNU2owVnZPQ2NZSVBzejhreGh3M2pjUXNSKzd5azhTRTlaZ2NaQTV1Q2Fxa3Q5S3FGenVvZTRkU0xHdzVYQ0ZZbWthYmE2dExtM0FyTjFiK0pwT0w5elNXUkxXSjcyVWNWQXppYnMyTlg4OFV4UTAxTngxRWRyN2VjRGN1RXVETFFsVTNWRFJpOFZBVm1LK0pWQXV5NVRGb0N1WXVLQWQzbktiTTdpemdsZVNQNkEzN2E3WlNadG80MVlDcGs2QVkwTFFmOFd0dm1WZHY2RWsycVwvaW5vSnErMGxTaHlqcTBUcmp5WGNUUE1sUW9kRlk4ZXJvXC9EVkY4ZFwvWll6NUdzZU51cnBlYWNiVFBcLzdtRytkd2FjR2Q2YWxGZ0NnZ3hhelBxdjFlZmZhM2NaayJ9.3DKygVmrCu_rEbcJCZfThubixd5C7DXF37P2zTiXIMk";
 
-    await sleep(SLEEP_TIME);
-
-    console.log('Log in succeed');
-    // setInterval(async () => {
-    //     let response = await axios(api.login())
-    //         .catch(error => { throw error; });
-    //     await sleep(SLEEP_TIME);
-    //     cookie = response.headers['set-cookie'][0].split(';')[0];
-    //     jwt = response.data.jwt;
-    // }, 1000 * 60 * 60);
-    // sendEmail(`吱吱吱，我会认真工作的。`, "吱！黄兔开工了");
     appendLog('START', '黄兔开工了');
-
 
     while (true) {
         time++;
         try {
+            if (!cookie || !jwt || cookie.length == 0 || jwt.length == 0) {
+                let response = await customAxios("login", api.login(), response => response?.headers && response?.data?.jwt, true);
+                cookie = response.headers['set-cookie'][0].split(';')[0];
+                jwt = response.data.jwt;
+                console.log('Log in succeed');
+
+            }
             let dateArray;
             if (!BLIND_MODE) {
                 let day = parseInt(moment().format('d'));
@@ -236,56 +262,43 @@ async function main() {
                 // let dayRange = range(2, 14 - day);
                 let dayRange = range(8 - day, 14 - day);
                 dateArray = dayRange.map(d =>
-                    moment().add(d, 'd').format("YYYY-MM-D"));
+                    moment().add(d, 'd').format("YYYY-MM-DD"));
                 dateArray = dateArray.sort(() => Math.random() - 0.5);
             } else {
-                let day = parseInt(moment().format('d'));
-                day = day == 0 ? 7 : day;
-                let dayRange = range(8 - day, 14 - day);
-                // dayRange = range(2, 4);
-                dateArray = dayRange.map(d =>
-                    moment().add(d, 'd').format("YYYY-MM-D"));
-                dateArray = dateArray.sort(() => Math.random() - 0.5);
-                // dateArray = ['2022-03-26', '2022-03-21', '2022-03-26', '2022-03-27'].sample();
+                // let day = parseInt(moment().format('d'));
+                // day = day == 0 ? 7 : day;
+                // let dayRange = range(8 - day, 14 - day);
+                // // dayRange = range(2, 4);
+                // dateArray = dayRange.map(d =>
+                //     moment().add(d, 'd').format("YYYY-MM-D"));
+                // dateArray = dateArray.sort(() => Math.random() - 0.5);
+                dateArray = ['2022-04-04', '2022-04-08', '2022-04-07'];
             }
             // console.log("Retry ...");
             date = dateArray.sample();
-            console.log("Trying:", date);
             let availableTime;
             if (!BLIND_MODE) {
-                let response = await axios(api.query(date, lineCode))
-                    .then((response) => (
-                        response.data
-                    ))
-                    .catch(error => { throw error; });
-                await sleep(SLEEP_TIME);
-                if (response?.code != "SUCCESS") { throw new Error("Query fail: " + JSON.stringify(response)); }
-                if (response?.code == "SUCCESS") {
-                    let responseData = response.responseData;
-                    // console.log(responseData);
-                    responseData = responseData?.filter(d => parseInt(d.maxPeople) > 0);
-                    if (responseData && responseData.length > 0) {
-                        responseData = responseData.sort((b, a) => a.maxPeople - b.maxPeople);
-                        availableTime = responseData[0].beginTime;
-                        appendLog('FOUND', date + ' ' + availableTime);
-                    } else { continue; }
-                }
+                console.log("Trying:", date);
+                let response = await customAxios("query", api.query(date, lineCode), response => response?.data?.code != "SUCCESS", true);
+                let responseData = response.responseData;
+                console.log(responseData);
+                responseData = responseData?.filter(d => parseInt(d.maxPeople) > 0);
+                if (responseData && responseData.length > 0) {
+                    responseData = responseData.sort((b, a) => a.maxPeople - b.maxPeople);
+                    availableTime = responseData[0].beginTime;
+                    appendLog('FOUND', date + ' ' + availableTime);
+                } else { continue; }
             } else {
                 availableTime = [11, 12, 14, 15, 17, 18].map(t => t + ":00:00").sample();
                 // availableTime = [18].map(t => t + ":00:00").sample();
             }
-            if (!jwt) { throw new Error("Empty JWT"); }
+
+            // if (!jwt) { throw new Error("Empty JWT"); }
+
             let captcha = "";
             do {
-                let response = await axios(api.captcha(cookie, lineCode))
-                    .then((response) => {
-                        // console.log(response.headers);
-                        return response.data;
-                    })
-                    .catch(error => { throw new Error("Captcha fail: " + error?.message); });
-                // if (response?.code != "SUCCESS") { throw new Error(response?.message); }
-                await sleep(SLEEP_TIME);
-                fs.writeFileSync("captcha.png", response);
+                let response = await customAxios("captcha", api.captcha(cookie, lineCode), true, true);
+                fs.writeFileSync("captcha.png", response.data);
                 try {
                     captcha = execSync("python ocr.py").toString().split('\n')[3].trim();
                 } catch (error) {
@@ -295,52 +308,26 @@ async function main() {
             console.log(`Captcha Solved: ${captcha}`);
             // console.log(api.buy(jwt, cookie, date, availableTime, captcha, lineCode));
             console.log('Buying', date, availableTime);
-            let response;
-            async function buy() {
-                response = await axios(api.buy(jwt, cookie, date, availableTime, captcha, lineCode))
-                    .then(async (response) => {
-                        // console.log(response.headers);
-                        if (response?.data?.code != "SUCCESS") {
-                            throw new Error(response?.data?.message || response?.data?.code);
-                        } else {
-                            return response.data;
-                        }
-                    })
-                    .catch(async error => {
-                        console.log("Buying error:", error?.message);
-                        if (error.message != "預約班次錯誤或不存在" && error.message != "預約人數超出當前可預約的總人數" && error.message != "验证码不正确") {
-                            await buy();
-                        }
-
-                    });
-            };
-            await buy();
-            await sleep(SLEEP_TIME);
-            // if (response?.code != "SUCCESS") { throw new Error("Buy fail: " + JSON.stringify(response)); }
-            if (response?.code == "SUCCESS") {
-                let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.responseData.orderNumber}&tab1=1`;
-                sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
-                appendLog('SUCCESS', link);
-                await sleep(60 * 1000 * 15);
-                // return;
-                // break;
-            }
+            let response = await customAxios("buy", api.buy(jwt, cookie, date, availableTime, captcha, lineCode),
+                response => (response?.data?.code != "SUCCESS" && response?.data?.orderNumber),
+                false
+                // response => response?.message != "验证码不正确"
+            );
+            let link = `https://i.hzmbus.com/webhtml/order_details?orderNo=${response.data.orderNumber}&tab1=1`;
+            // sendEmail(`购票链接：${link}`, "吱吱吱！抢到票了！！");
+            appendLog('SUCCESS', link);
+            await sleep(60 * 1000 * 15);
         } catch (error) {
-            let errorText = error.toString();
-            if (error.message == "请先登录" || (!jwt)) {
-                let response = await axios(api.login())
-                    .catch(error => { throw error; });
-                await sleep(SLEEP_TIME);
-                cookie = response.headers['set-cookie'][0].split(';')[0];
-                jwt = response.data.jwt;
-                console.log('Log in ...');
+            let errorText = error.toString() || error.message;
+            if (error.message == "请先登录") {
+                jwt = false;
+                cookie = false;
             } else {
-                appendLog('ERROR', errorText);
+                appendLog(error.tag, errorText);
             }
         }
-        await sleep(LONG_SLEEP_TIME);
-
     }
+
 }
 // async function captcha() {
 
